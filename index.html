@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lot Number Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      font-size: 1em;
+    }
+    .lot-list span {
+      display: block;
+      padding: 5px;
+      margin: 2px 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      width: fit-content;
+    }
+    .lot-list span:hover {
+      background: #dff0d8;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Lot Number Generator</h2>
+  <label for="lot">Enter Starting Lot #:</label><br>
+  <input type="text" id="lot" placeholder="e.g., FN0801251A"><br>
+
+  <label for="count">How many to generate:</label><br>
+  <input type="number" id="count" value="10" min="1"><br>
+
+  <button onclick="generateLots()">Generate</button>
+
+  <div class="lot-list" id="results"></div>
+
+  <script>
+    function generateLots() {
+      const lot = document.getElementById('lot').value.trim();
+      const count = parseInt(document.getElementById('count').value);
+      const resultArea = document.getElementById('results');
+      resultArea.innerHTML = '';
+
+      const match = lot.match(/^([A-Z]+\d+)(\d+)([A-Z])$/i);
+      if (!match) {
+        alert('Invalid format. Use something like FN0801251A.');
+        return;
+      }
+
+      const base = match[1];
+      const startNum = parseInt(match[2], 10);
+      const letterSuffix = match[3];
+
+      for (let i = 0; i < count; i++) {
+        const newSuffixNumber = startNum + i;
+        const newLot = `${base}${newSuffixNumber}${letterSuffix}`;
+        const displayText = `Lot #: ${newLot}`;
+
+        const span = document.createElement('span');
+        span.textContent = displayText;
+        span.onclick = () => {
+          navigator.clipboard.writeText(displayText);
+          span.style.background = "#c8e6c9";
+        };
+        resultArea.appendChild(span);
+      }
+    }
+  </script>
+
+</body>
+</html>
