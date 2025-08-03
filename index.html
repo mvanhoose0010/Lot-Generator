@@ -7,41 +7,98 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #f4f4f4;
+      background: #FFD700;
+      display: flex;
     }
+
+    .main-content {
+      flex: 2;
+    }
+
     input, button {
       padding: 10px;
       margin: 5px 0;
       font-size: 1em;
     }
+
     .lot-list span {
       display: block;
       padding: 5px;
       margin: 2px 0;
-      background: #fff;
+      background: #DDA0DD;
       border: 1px solid #ccc;
       cursor: pointer;
       width: fit-content;
     }
+
     .lot-list span:hover {
       background: #dff0d8;
+    }
+
+    .copied-dialog {
+      flex: 1;
+      margin-left: 40px;
+      padding: 15px;
+      background: #DDA0DD;
+      border: 1px solid #ccc;
+      height: fit-content;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .copied-dialog h3 {
+      margin-top: 0;
+    }
+
+    .copied-dialog ul {
+      list-style-type: none; /* Remove bullet */
+      padding-left: 0;
+    }
+
+    .copied-dialog li {
+      margin-bottom: 5px;
+    }
+
+    .copied-dialog button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      font-size: 0.95em;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .copied-dialog button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
 
-  <h2>Lot Number Generator</h2>
-  <label for="lot">Enter Starting Lot #:</label><br>
-  <input type="text" id="lot" placeholder="e.g., FN0801251A"><br>
+  <div class="main-content">
+    <h2>Solution Lot Builder</h2>
+    <label for="lot">Enter Starting Lot #:</label><br>
+    <input type="text" id="lot" placeholder="e.g., FN0801251A"><br>
 
-  <label for="count">How many to generate:</label><br>
-  <input type="number" id="count" value="10" min="1"><br>
+    <label for="count">How many to generate:</label><br>
+    <input type="number" id="count" value="10" min="1"><br>
 
-  <button onclick="generateLots()">Generate</button>
+    <button onclick="generateLots()">Generate</button>
 
-  <div class="lot-list" id="results"></div>
+    <div class="lot-list" id="results"></div>
+  </div>
+
+  <div class="copied-dialog" id="copiedBox">
+    <h3>Created Lots</h3>
+    <ul id="copiedList"></ul>
+    <button onclick="copyAllCreatedLots()">Copy All Created Lots</button>
+  </div>
 
   <script>
+    const copiedSet = new Set();
+
     function generateLots() {
       const lot = document.getElementById('lot').value.trim();
       const count = parseInt(document.getElementById('count').value);
@@ -67,10 +124,34 @@
         span.textContent = displayText;
         span.onclick = () => {
           navigator.clipboard.writeText(displayText);
-          span.style.background = "#c8e6c9";
+          span.style.background = "#1E90FF";
+          addToCopiedList(displayText);
         };
         resultArea.appendChild(span);
       }
+    }
+
+    function addToCopiedList(text) {
+      const cleanedText = text.replace(/^LOT #:\s*/, ''); // Strip prefix
+      if (copiedSet.has(cleanedText)) return; // Avoid duplicates
+      copiedSet.add(cleanedText);
+
+      const li = document.createElement('li');
+      li.textContent = cleanedText;
+      document.getElementById('copiedList').appendChild(li);
+    }
+
+    function copyAllCreatedLots() {
+      const items = Array.from(document.querySelectorAll('#copiedList li')).map(li => li.textContent);
+      if (items.length === 0) {
+        alert("No created lots to copy.");
+        return;
+      }
+
+      const textToCopy = items.join('\n');
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => alert("All created lots copied to clipboard."))
+        .catch(() => alert("Failed to copy."));
     }
   </script>
 
