@@ -51,12 +51,13 @@
     }
 
     .copied-dialog ul {
-      list-style-type: none; /* Remove bullet */
+      list-style-type: none;
       padding-left: 0;
     }
 
     .copied-dialog li {
       margin-bottom: 5px;
+      white-space: pre; /* Keep tab spacing visible */
     }
 
     .copied-dialog button {
@@ -79,8 +80,12 @@
 
   <div class="main-content">
     <h2>Solution Lot Builder</h2>
-    <label for="lot">Enter Starting Lot #:</label><br>
-    <input type="text" id="lot" placeholder="e.g., FN0801251A"><br>
+
+    <label for="lotLetters">Lot Letters/Suffix (e.g., MAE):</label><br>
+    <input type="text" id="lotLetters" placeholder="e.g., MAE" maxlength="5"><br>
+
+    <label for="lotNumbers">Lot Number (e.g., 0809251):</label><br>
+    <input type="text" id="lotNumbers" placeholder="e.g., 0809251" maxlength="10"><br>
 
     <label for="count">How many to generate:</label><br>
     <input type="number" id="count" value="10" min="1"><br>
@@ -97,63 +102,69 @@
   </div>
 
   <script>
-    const copiedSet = new Set();
+  const copiedSet = new Set();
 
-    function generateLots() {
-      const lot = document.getElementById('lot').value.trim();
-      const count = parseInt(document.getElementById('count').value);
-      const resultArea = document.getElementById('results');
-      resultArea.innerHTML = '';
+  function generateLots() {
+    const letters = document.getElementById('lotLetters').value.trim().toUpperCase();
+    const numbers = document.getElementById('lotNumbers').value.trim();
+    const count = parseInt(document.getElementById('count').value);
+    const resultArea = document.getElementById('results');
+    resultArea.innerHTML = '';
 
-      const match = lot.match(/^([A-Z]+\d+)(\d+)([A-Z])$/i);
-      if (!match) {
-        alert('Invalid format. Use something like FN0801251A.');
-        return;
-      }
-
-      const base = match[1];
-      const startNum = parseInt(match[2], 10);
-      const letterSuffix = match[3];
-
-      for (let i = 0; i < count; i++) {
-        const newSuffixNumber = startNum + i;
-        const newLot = `${base}${newSuffixNumber}${letterSuffix}`;
-        const displayText = `LOT #: ${newLot}`;
-
-        const span = document.createElement('span');
-        span.textContent = displayText;
-        span.onclick = () => {
-          navigator.clipboard.writeText(displayText);
-          span.style.background = "#1E90FF";
-          addToCopiedList(displayText);
-        };
-        resultArea.appendChild(span);
-      }
+    if (!letters.match(/^[A-Z]+$/) || letters.length < 3) {
+      alert('Lot letters must be at least 3 characters A-Z only.');
+      return;
+    }
+    if (!numbers.match(/^\d+\d$/)) {
+      alert('Lot number must be numeric.');
+      return;
     }
 
-    function addToCopiedList(text) {
-      const cleanedText = text.replace(/^LOT #:\s*/, ''); // Strip prefix
-      if (copiedSet.has(cleanedText)) return; // Avoid duplicates
-      copiedSet.add(cleanedText);
+    // Break apart
+    const firstTwoLetters = letters.slice(0, 2);
+    const suffixLetter = letters.slice(2); // everything after 2nd letter
+    const datePart = numbers.slice(0, -1); // everything except last digit
+    let serialNum = parseInt(numbers.slice(-1), 10); // last digit only
 
-      const li = document.createElement('li');
-      li.textContent = cleanedText;
-      document.getElementById('copiedList').appendChild(li);
+    for (let i = 0; i < count; i++) {
+      const newSerial = serialNum + i;
+      const newLot = `${firstTwoLetters}${datePart}${newSerial}${suffixLetter}`;
+      const displayText = `LOT #: ${newLot}`;
+
+      const span = document.createElement('span');
+      span.textContent = displayText;
+      span.onclick = () => {
+        navigator.clipboard.writeText(displayText);
+        span.style.background = "#1E90FF";
+        addToCopiedList(newLot);
+      };
+      resultArea.appendChild(span);
+    }
+  }
+
+  function addToCopiedList(lot) {
+    if (copiedSet.has(lot)) return;
+    copiedSet.add(lot);
+
+    const li = document.createElement('li');
+    li.textContent = `${lot}\tSOLP`; // Tab separated
+    document.getElementById('copiedList').appendChild(li);
+  }
+
+  function copyAllCreatedLots() {
+    const items = Array.from(document.querySelectorAll('#copiedList li')).map(li => li.textContent);
+    if (items.length === 0) {
+      alert("No created lots to copy.");
+      return;
     }
 
-    function copyAllCreatedLots() {
-      const items = Array.from(document.querySelectorAll('#copiedList li')).map(li => li.textContent);
-      if (items.length === 0) {
-        alert("No created lots to copy.");
-        return;
-      }
+    const textToCopy = items.join('\n');
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => alert("All created lots copied to clipboard."))
+      .catch(() => alert("Failed to copy."));
+  }
+</script>
 
-      const textToCopy = items.join('\n');
-      navigator.clipboard.writeText(textToCopy)
-        .then(() => alert("All created lots copied to clipboard."))
-        .catch(() => alert("Failed to copy."));
-    }
-  </script>
 
 </body>
 </html>
