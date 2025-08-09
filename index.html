@@ -1,78 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Lot Number Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #FFD700;
+      /* Gradient background */
+      background: linear-gradient(135deg, #ff9a00, #ff6a00, #ff0055);
       display: flex;
+      min-height: 100vh;
+      margin: 0;
+      color: #222;
+    }
+
+    .main-content, .copied-dialog {
+      /* translucent white background with blur */
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      padding: 25px;
     }
 
     .main-content {
       flex: 2;
+      margin-right: 40px;
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
     }
 
     input, button {
       padding: 10px;
-      margin: 5px 0;
+      margin: 8px 0 15px 0;
       font-size: 1em;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #ff6a00;
+      box-shadow: 0 0 8px #ff6a00;
+    }
+
+    button {
+      background-color: #ff6a00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: #e65b00;
     }
 
     .lot-list span {
       display: block;
-      padding: 5px;
-      margin: 2px 0;
-      background: #DDA0DD;
-      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 5px 0;
+      background: #ff9a00cc;
+      border-radius: 8px;
+      border: 1px solid #ff6a00;
       cursor: pointer;
       width: fit-content;
+      user-select: none;
+      transition: background-color 0.3s ease;
     }
 
     .lot-list span:hover {
-      background: #dff0d8;
+      background: #d94f00cc;
+      color: white;
     }
 
     .copied-dialog {
       flex: 1;
-      margin-left: 40px;
-      padding: 15px;
-      background: #DDA0DD;
-      border: 1px solid #ccc;
-      height: fit-content;
       max-height: 400px;
       overflow-y: auto;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
     }
 
     .copied-dialog h3 {
       margin-top: 0;
+      color: #ff6a00;
+      font-weight: 700;
+      user-select: none;
     }
 
     .copied-dialog ul {
       list-style-type: none;
       padding-left: 0;
+      margin: 0 0 10px 0;
+      flex-grow: 1;
+      overflow-y: auto;
     }
 
     .copied-dialog li {
-      margin-bottom: 5px;
+      margin-bottom: 8px;
       white-space: pre; /* Keep tab spacing visible */
+      font-family: monospace;
+      font-weight: 500;
+      color: #333;
     }
 
     .copied-dialog button {
-      margin-top: 10px;
-      padding: 8px 12px;
-      font-size: 0.95em;
-      background-color: #007BFF;
+      padding: 12px 16px;
+      font-size: 1em;
+      background-color: #ff6a00;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
       cursor: pointer;
+      font-weight: 600;
+      user-select: none;
+      transition: background-color 0.3s ease;
     }
 
     .copied-dialog button:hover {
-      background-color: #0056b3;
+      background-color: #e65b00;
     }
   </style>
 </head>
@@ -102,69 +157,68 @@
   </div>
 
   <script>
-  const copiedSet = new Set();
+    const copiedSet = new Set();
 
-  function generateLots() {
-    const letters = document.getElementById('lotLetters').value.trim().toUpperCase();
-    const numbers = document.getElementById('lotNumbers').value.trim();
-    const count = parseInt(document.getElementById('count').value);
-    const resultArea = document.getElementById('results');
-    resultArea.innerHTML = '';
+    function generateLots() {
+      const letters = document.getElementById('lotLetters').value.trim().toUpperCase();
+      const numbers = document.getElementById('lotNumbers').value.trim();
+      const count = parseInt(document.getElementById('count').value);
+      const resultArea = document.getElementById('results');
+      resultArea.innerHTML = '';
 
-    if (!letters.match(/^[A-Z]+$/) || letters.length < 3) {
-      alert('Lot letters must be at least 3 characters A-Z only.');
-      return;
-    }
-    if (!numbers.match(/^\d+\d$/)) {
-      alert('Lot number must be numeric.');
-      return;
-    }
+      if (!letters.match(/^[A-Z]+$/) || letters.length < 3) {
+        alert('Lot letters must be at least 3 characters A-Z only.');
+        return;
+      }
+      if (!numbers.match(/^\d+\d$/)) {
+        alert('Lot number must be numeric.');
+        return;
+      }
 
-    // Break apart
-    const firstTwoLetters = letters.slice(0, 2);
-    const suffixLetter = letters.slice(2); // everything after 2nd letter
-    const datePart = numbers.slice(0, -1); // everything except last digit
-    let serialNum = parseInt(numbers.slice(-1), 10); // last digit only
+      // Break apart
+      const firstTwoLetters = letters.slice(0, 2);
+      const suffixLetter = letters.slice(2); // everything after 2nd letter
+      const datePart = numbers.slice(0, -1); // everything except last digit
+      let serialNum = parseInt(numbers.slice(-1), 10); // last digit only
 
-    for (let i = 0; i < count; i++) {
-      const newSerial = serialNum + i;
-      const newLot = `${firstTwoLetters}${datePart}${newSerial}${suffixLetter}`;
-      const displayText = `LOT #: ${newLot}`;
+      for (let i = 0; i < count; i++) {
+        const newSerial = serialNum + i;
+        const newLot = `${firstTwoLetters}${datePart}${newSerial}${suffixLetter}`;
+        const displayText = `LOT #: ${newLot}`;
 
-      const span = document.createElement('span');
-      span.textContent = displayText;
-      span.onclick = () => {
-        navigator.clipboard.writeText(displayText);
-        span.style.background = "#1E90FF";
-        addToCopiedList(newLot);
-      };
-      resultArea.appendChild(span);
-    }
-  }
-
-  function addToCopiedList(lot) {
-    if (copiedSet.has(lot)) return;
-    copiedSet.add(lot);
-
-    const li = document.createElement('li');
-    li.textContent = `${lot}\tSOLP`; // Tab separated
-    document.getElementById('copiedList').appendChild(li);
-  }
-
-  function copyAllCreatedLots() {
-    const items = Array.from(document.querySelectorAll('#copiedList li')).map(li => li.textContent);
-    if (items.length === 0) {
-      alert("No created lots to copy.");
-      return;
+        const span = document.createElement('span');
+        span.textContent = displayText;
+        span.onclick = () => {
+          navigator.clipboard.writeText(displayText);
+          span.style.background = "#1E90FF";
+          addToCopiedList(newLot);
+        };
+        resultArea.appendChild(span);
+      }
     }
 
-    const textToCopy = items.join('\n');
-    navigator.clipboard.writeText(textToCopy)
-      .then(() => alert("All created lots copied to clipboard."))
-      .catch(() => alert("Failed to copy."));
-  }
-</script>
+    function addToCopiedList(lot) {
+      if (copiedSet.has(lot)) return;
+      copiedSet.add(lot);
 
+      const li = document.createElement('li');
+      li.textContent = `${lot}\tSOLP`; // Tab separated
+      document.getElementById('copiedList').appendChild(li);
+    }
+
+    function copyAllCreatedLots() {
+      const items = Array.from(document.querySelectorAll('#copiedList li')).map(li => li.textContent);
+      if (items.length === 0) {
+        alert("No created lots to copy.");
+        return;
+      }
+
+      const textToCopy = items.join('\n');
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => alert("All created lots copied to clipboard."))
+        .catch(() => alert("Failed to copy."));
+    }
+  </script>
 
 </body>
 </html>
