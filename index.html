@@ -7,11 +7,12 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: linear-gradient(135deg, #baa2a2, #5e3d0b, #211d18);
-      display: flex;
       min-height: 100vh;
       margin: 0;
-      color: #145;
+      color: #dd09e8;
+      background-size: cover;
+      background-position: center;
+      transition: background-image 0.6s ease-in-out;
     }
 
     .main-content {
@@ -25,7 +26,7 @@
     .dialogs {
       flex: 1;
       display: flex;
-      gap: 30px; /* spacing between the two dialog boxes */
+      gap: 30px;
     }
 
     .dialog-box {
@@ -115,9 +116,49 @@
       margin-bottom: 10px;
       min-width: 80px;
     }
+
+    /* Timer */
+    #timerDisplay {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ff6a00;
+      margin-top: 10px;
+      user-select: none;
+    }
+
+    /* Background buttons */
+    .bg-buttons {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 999;
+    }
+    .bg-buttons button {
+      width: 45px;
+      height: 45px;
+      border: 2px solid #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.2s;
+    }
+    .bg-buttons button:hover {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
+
+  <!-- Scenic background switcher -->
+  <div class="bg-buttons">
+    <button style="background-image: url('https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg');" onclick="changeBG(1)" title="Lake View"></button>
+    <button style="background-image: url('https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg');" onclick="changeBG(2)" title="Misty Mountains"></button>
+    <button style="background-image: url('https://images.pexels.com/photos/34950/pexels-photo.jpg');" onclick="changeBG(3)" title="Golden Meadow"></button>
+    <button style="background-image: url('https://images.pexels.com/photos/285225/pexels-photo-285225.jpeg');" onclick="changeBG(4)" title="Sunset Hills"></button>
+  </div>
 
   <div class="main-content">
     <h2>Solution Lot Builder</h2>
@@ -139,17 +180,18 @@
     <button onclick="addAllGeneratedLots()">Add All to Bulk Lots</button>
 
     <div class="lot-list" id="results"></div>
+
+    <!-- Timer display -->
+    <div id="timerDisplay">Time since last copy: 0s</div>
   </div>
 
   <div class="dialogs">
-    <!-- Manual Clicks -->
     <div class="dialog-box">
       <h3>Created Lots (Manual)</h3>
       <ul id="manualList"></ul>
       <button onclick="copyAll('manualList')">Copy All Manual Lots</button>
     </div>
 
-    <!-- Bulk Adds -->
     <div class="dialog-box">
       <h3>Created Lots (Bulk)</h3>
       <ul id="bulkList"></ul>
@@ -160,6 +202,21 @@
   <script>
     const manualSet = new Set();
     const bulkSet = new Set();
+
+    // Timer
+    let timer = 0;
+    let timerInterval = null;
+    const timerDisplay = document.getElementById("timerDisplay");
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timer = 0;
+      timerDisplay.textContent = "Time since last copy: 0s";
+      timerInterval = setInterval(() => {
+        timer++;
+        timerDisplay.textContent = `Time since last copy: ${timer}s`;
+      }, 1000);
+    }
 
     function generateLots() {
       const letters = document.getElementById('lotLetters').value.trim().toUpperCase();
@@ -193,6 +250,7 @@
           navigator.clipboard.writeText(displayText);
           span.style.background = "#1E90FF";
           addToManualList(newLot);
+          startTimer();
         };
         resultArea.appendChild(span);
       }
@@ -237,7 +295,10 @@
       }
       const textToCopy = items.join('\n');
       navigator.clipboard.writeText(textToCopy)
-        .then(() => alert("Copied all lots to clipboard."))
+        .then(() => {
+          alert("Copied all lots to clipboard.");
+          startTimer();
+        })
         .catch(() => alert("Failed to copy."));
     }
 
@@ -275,6 +336,23 @@
       }
     }
     createDateButtons();
+
+    // Scenic background images
+    const bgImages = {
+      1: 'https://i.redd.it/spquge29f9jf1.jpeg',
+      2: 'https://i.redd.it/afmu6uyoukif1.jpeg',
+      3: 'https://i.redd.it/6lvfziya2nff1.jpeg',
+      4: 'https://i.redd.it/ipda90h8dk311.jpg',
+    };
+
+    function changeBG(index) {
+      const url = bgImages[index];
+      document.body.style.backgroundImage = `url('${url}')`;
+    }
+
+    // Default background
+    changeBG(1);
+    startTimer();
   </script>
 </body>
 </html>
