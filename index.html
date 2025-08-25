@@ -9,7 +9,7 @@
       padding: 20px;
       min-height: 100vh;
       margin: 0;
-      color: #dd09e8;
+      color: #e85e09;
       background-size: cover;
       background-position: center;
       transition: background-image 0.6s ease-in-out;
@@ -117,13 +117,22 @@
       min-width: 80px;
     }
 
-    /* Timer */
+    /* Timer wrapper on right side */
+    #timerWrapper {
+      position: fixed;
+      top: 50%;
+      right: 5%;
+      transform: translateY(-50%);
+      text-align: center;
+    }
+
+    /* Big timer numbers */
     #timerDisplay {
-      font-size: 1.2em;
+      font-size: 20em;
       font-weight: bold;
-      color: #ff6a00;
-      margin-top: 10px;
+      color: #13d67b;
       user-select: none;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
     }
 
     /* Background buttons */
@@ -154,10 +163,10 @@
 
   <!-- Scenic background switcher -->
   <div class="bg-buttons">
-    <button style="background-image: url('https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg');" onclick="changeBG(1)" title="Lake View"></button>
-    <button style="background-image: url('https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg');" onclick="changeBG(2)" title="Misty Mountains"></button>
-    <button style="background-image: url('https://images.pexels.com/photos/34950/pexels-photo.jpg');" onclick="changeBG(3)" title="Golden Meadow"></button>
-    <button style="background-image: url('https://images.pexels.com/photos/285225/pexels-photo-285225.jpeg');" onclick="changeBG(4)" title="Sunset Hills"></button>
+    <button style="background-image: url('https://i.redd.it/spquge29f9jf1.jpeg');" onclick="changeBG(1)" title="Lake View"></button>
+    <button style="background-image: url('https://i.redd.it/afmu6uyoukif1.jpeg');" onclick="changeBG(2)" title="Misty Mountains"></button>
+    <button style="background-image: url('https://i.redd.it/6lvfziya2nff1.jpeg');" onclick="changeBG(3)" title="Golden Meadow"></button>
+    <button style="background-image: url('https://i.redd.it/ipda90h8dk311.jpg');" onclick="changeBG(4)" title="Sunset Hills"></button>
   </div>
 
   <div class="main-content">
@@ -180,9 +189,6 @@
     <button onclick="addAllGeneratedLots()">Add All to Bulk Lots</button>
 
     <div class="lot-list" id="results"></div>
-
-    <!-- Timer display -->
-    <div id="timerDisplay">Time since last copy: 0s</div>
   </div>
 
   <div class="dialogs">
@@ -199,6 +205,11 @@
     </div>
   </div>
 
+  <!-- Big timer -->
+  <div id="timerWrapper">
+    <div id="timerDisplay">0s</div>
+  </div>
+
   <script>
     const manualSet = new Set();
     const bulkSet = new Set();
@@ -211,10 +222,10 @@
     function startTimer() {
       clearInterval(timerInterval);
       timer = 0;
-      timerDisplay.textContent = "Time since last copy: 0s";
+      timerDisplay.textContent = "0";
       timerInterval = setInterval(() => {
         timer++;
-        timerDisplay.textContent = `Time since last copy: ${timer}s`;
+        timerDisplay.textContent = `${timer}`;
       }, 1000);
     }
 
