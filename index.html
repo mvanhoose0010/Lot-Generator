@@ -211,159 +211,170 @@
   </div>
 
   <script>
-    const manualSet = new Set();
-    const bulkSet = new Set();
+  const manualSet = new Set();
+  const bulkSet = new Set();
 
-    // Timer
-    let timer = 0;
-    let timerInterval = null;
-    const timerDisplay = document.getElementById("timerDisplay");
+  // Timer
+  let timer = 0;
+  let timerInterval = null;
+  const timerDisplay = document.getElementById("timerDisplay");
 
-    function startTimer() {
-      clearInterval(timerInterval);
-      timer = 0;
-      timerDisplay.textContent = "0";
-      timerInterval = setInterval(() => {
-        timer++;
-        timerDisplay.textContent = `${timer}`;
-      }, 1000);
+  function startTimer() {
+    clearInterval(timerInterval);
+    timer = 0;
+    timerDisplay.textContent = "0";
+    timerDisplay.style.color = "#13d67b"; // reset to green
+    timerInterval = setInterval(() => {
+      timer++;
+      timerDisplay.textContent = `${timer}`;
+
+      // Color thresholds
+      if (timer >= 33) {
+        timerDisplay.style.color = "red";
+      } else if (timer >= 25) {
+        timerDisplay.style.color = "yellow";
+      } else {
+        timerDisplay.style.color = "#13d67b";
+      }
+    }, 1000);
+  }
+
+  function generateLots() {
+    const letters = document.getElementById('lotLetters').value.trim().toUpperCase();
+    const numbers = document.getElementById('lotNumbers').value.trim();
+    const count = parseInt(document.getElementById('count').value);
+    const resultArea = document.getElementById('results');
+    resultArea.innerHTML = '';
+
+    if (!letters.match(/^[A-Z]+$/) || letters.length < 3) {
+      alert('Lot letters must be at least 3 characters A-Z only.');
+      return;
+    }
+    if (!numbers.match(/^\d+$/)) {
+      alert('Lot number must be numeric.');
+      return;
     }
 
-    function generateLots() {
-      const letters = document.getElementById('lotLetters').value.trim().toUpperCase();
-      const numbers = document.getElementById('lotNumbers').value.trim();
-      const count = parseInt(document.getElementById('count').value);
-      const resultArea = document.getElementById('results');
-      resultArea.innerHTML = '';
+    const firstTwoLetters = letters.slice(0, 2);
+    const suffixLetter = letters.slice(2);
+    const datePart = numbers.slice(0, -1);
+    const serialNum = parseInt(numbers.slice(-1), 10);
 
-      if (!letters.match(/^[A-Z]+$/) || letters.length < 3) {
-        alert('Lot letters must be at least 3 characters A-Z only.');
-        return;
-      }
-      if (!numbers.match(/^\d+$/)) {
-        alert('Lot number must be numeric.');
-        return;
-      }
+    for (let i = 0; i < count; i++) {
+      const newSerial = serialNum + i;
+      const newLot = `${firstTwoLetters}${datePart}${newSerial}${suffixLetter}`;
+      const displayText = `LOT #: ${newLot}`;
 
-      const firstTwoLetters = letters.slice(0, 2);
-      const suffixLetter = letters.slice(2);
-      const datePart = numbers.slice(0, -1);
-      const serialNum = parseInt(numbers.slice(-1), 10);
-
-      for (let i = 0; i < count; i++) {
-        const newSerial = serialNum + i;
-        const newLot = `${firstTwoLetters}${datePart}${newSerial}${suffixLetter}`;
-        const displayText = `LOT #: ${newLot}`;
-
-        const span = document.createElement('span');
-        span.textContent = displayText;
-        span.onclick = () => {
-          navigator.clipboard.writeText(displayText);
-          span.style.background = "#1E90FF";
-          addToManualList(newLot);
-          startTimer();
-        };
-        resultArea.appendChild(span);
-      }
-    }
-
-    function addToManualList(lot) {
-      if (manualSet.has(lot)) return;
-      manualSet.add(lot);
-
-      const li = document.createElement('li');
-      li.textContent = `${lot}\tSOLP`;
-      document.getElementById('manualList').appendChild(li);
-    }
-
-    function addAllGeneratedLots() {
-      const results = document.querySelectorAll('#results span');
-      if (results.length === 0) {
-        alert("No generated lots to add.");
-        return;
-      }
-      results.forEach(span => {
-        const lotText = span.textContent.replace("LOT #: ", "");
-        addToBulkList(lotText);
+      const span = document.createElement('span');
+      span.textContent = displayText;
+      span.onclick = () => {
+        navigator.clipboard.writeText(displayText);
         span.style.background = "#1E90FF";
-      });
+        addToManualList(newLot);
+        startTimer();
+      };
+      resultArea.appendChild(span);
     }
+  }
 
-    function addToBulkList(lot) {
-      if (bulkSet.has(lot)) return;
-      bulkSet.add(lot);
+  function addToManualList(lot) {
+    if (manualSet.has(lot)) return;
+    manualSet.add(lot);
 
-      const li = document.createElement('li');
-      li.textContent = `${lot}\tSOLP`;
-      document.getElementById('bulkList').appendChild(li);
+    const li = document.createElement('li');
+    li.textContent = `${lot}\tSOLP`;
+    document.getElementById('manualList').appendChild(li);
+  }
+
+  function addAllGeneratedLots() {
+    const results = document.querySelectorAll('#results span');
+    if (results.length === 0) {
+      alert("No generated lots to add.");
+      return;
     }
+    results.forEach(span => {
+      const lotText = span.textContent.replace("LOT #: ", "");
+      addToBulkList(lotText);
+      span.style.background = "#1E90FF";
+    });
+    startTimer(); // reset timer when adding all
+  }
 
-    function copyAll(listId) {
-      const items = Array.from(document.querySelectorAll(`#${listId} li`)).map(li => li.textContent);
-      if (items.length === 0) {
-        alert("No lots to copy.");
-        return;
-      }
-      const textToCopy = items.join('\n');
-      navigator.clipboard.writeText(textToCopy)
-        .then(() => {
-          alert("Copied all lots to clipboard.");
-          startTimer();
-        })
-        .catch(() => alert("Failed to copy."));
+  function addToBulkList(lot) {
+    if (bulkSet.has(lot)) return;
+    bulkSet.add(lot);
+
+    const li = document.createElement('li');
+    li.textContent = `${lot}\tSOLP`;
+    document.getElementById('bulkList').appendChild(li);
+  }
+
+  function copyAll(listId) {
+    const items = Array.from(document.querySelectorAll(`#${listId} li`)).map(li => li.textContent);
+    if (items.length === 0) {
+      alert("No lots to copy.");
+      return;
     }
+    const textToCopy = items.join('\n');
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        alert("Copied all lots to clipboard.");
+        startTimer();
+      })
+      .catch(() => alert("Failed to copy."));
+  }
 
-    function pad(num) {
-      return num.toString().padStart(2, '0');
+  function pad(num) {
+    return num.toString().padStart(2, '0');
+  }
+
+  function formatDateForLot(date) {
+    const mm = pad(date.getMonth() + 1);
+    const dd = pad(date.getDate());
+    const yy = date.getFullYear().toString().slice(-2);
+    return `${mm}${dd}${yy}`;
+  }
+
+  function getWeekdayName(date) {
+    return date.toLocaleDateString(undefined, { weekday: 'short' });
+  }
+
+  function createDateButtons() {
+    const container = document.getElementById('dateButtonsContainer');
+    container.innerHTML = '<strong>Select Date:</strong><br>';
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const formattedDate = formatDateForLot(date);
+      const weekday = getWeekdayName(date);
+
+      const btn = document.createElement('button');
+      btn.textContent = `${weekday} ${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
+      btn.onclick = () => {
+        document.getElementById('lotNumbers').value = `${formattedDate}1`;
+      };
+      container.appendChild(btn);
     }
+  }
+  createDateButtons();
 
-    function formatDateForLot(date) {
-      const mm = pad(date.getMonth() + 1);
-      const dd = pad(date.getDate());
-      const yy = date.getFullYear().toString().slice(-2);
-      return `${mm}${dd}${yy}`;
-    }
+  // Scenic background images
+  const bgImages = {
+    1: 'https://i.redd.it/spquge29f9jf1.jpeg',
+    2: 'https://i.redd.it/afmu6uyoukif1.jpeg',
+    3: 'https://i.redd.it/6lvfziya2nff1.jpeg',
+    4: 'https://i.redd.it/ipda90h8dk311.jpg',
+  };
 
-    function getWeekdayName(date) {
-      return date.toLocaleDateString(undefined, { weekday: 'short' });
-    }
+  function changeBG(index) {
+    const url = bgImages[index];
+    document.body.style.backgroundImage = `url('${url}')`;
+  }
 
-    function createDateButtons() {
-      const container = document.getElementById('dateButtonsContainer');
-      container.innerHTML = '<strong>Select Date:</strong><br>';
-      const today = new Date();
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        const formattedDate = formatDateForLot(date);
-        const weekday = getWeekdayName(date);
-
-        const btn = document.createElement('button');
-        btn.textContent = `${weekday} ${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
-        btn.onclick = () => {
-          document.getElementById('lotNumbers').value = `${formattedDate}1`;
-        };
-        container.appendChild(btn);
-      }
-    }
-    createDateButtons();
-
-    // Scenic background images
-    const bgImages = {
-      1: 'https://i.redd.it/spquge29f9jf1.jpeg',
-      2: 'https://i.redd.it/afmu6uyoukif1.jpeg',
-      3: 'https://i.redd.it/6lvfziya2nff1.jpeg',
-      4: 'https://i.redd.it/ipda90h8dk311.jpg',
-    };
-
-    function changeBG(index) {
-      const url = bgImages[index];
-      document.body.style.backgroundImage = `url('${url}')`;
-    }
-
-    // Default background
-    changeBG(1);
-    startTimer();
-  </script>
+  // Default background
+  changeBG(1);
+  startTimer();
+</script>
 </body>
 </html>
