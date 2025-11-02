@@ -171,7 +171,6 @@
       text-align: center;
     }
 
-    /* small screens: stack dialogs */
     @media (max-width: 900px) {
       .dialogs { flex-direction: column; }
       #timerDisplay { font-size: 8em; }
@@ -238,42 +237,32 @@
   </div>
 
   <script>
-    // --- Data sets ---
     const manualSet = new Set();
     const bulkSet = new Set();
 
-    // --- Timer ---
     let timer = 0;
     let timerInterval = null;
     const timerDisplay = document.getElementById("timerDisplay");
 
     function startTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-      }
+      if (timerInterval) clearInterval(timerInterval);
       timer = 0;
       timerDisplay.textContent = "0";
       timerDisplay.style.color = "#13d67b";
       timerInterval = setInterval(() => {
         timer++;
         timerDisplay.textContent = `${timer}`;
-        if (timer >= 33) {
-          timerDisplay.style.color = "red";
-        } else if (timer >= 25) {
-          timerDisplay.style.color = "yellow";
-        } else {
-          timerDisplay.style.color = "#13d67b";
-        }
+        if (timer >= 33) timerDisplay.style.color = "red";
+        else if (timer >= 25) timerDisplay.style.color = "yellow";
+        else timerDisplay.style.color = "#13d67b";
       }, 1000);
     }
 
-    // --- Counts ---
     function updateCounts() {
       document.getElementById("manualCount").textContent = `(${manualSet.size})`;
       document.getElementById("bulkCount").textContent = `(${bulkSet.size})`;
     }
 
-    // --- Add items ---
     function addToManualList(lot) {
       if (manualSet.has(lot)) return;
       manualSet.add(lot);
@@ -292,7 +281,6 @@
       updateCounts();
     }
 
-    // --- Generate UI / behavior ---
     function generateLots() {
       const letters = document.getElementById('lotLetters').value.trim().toUpperCase();
       const numbers = document.getElementById('lotNumbers').value.trim();
@@ -326,8 +314,7 @@
         const span = document.createElement('span');
         span.textContent = displayText;
         span.onclick = () => {
-          // copy display (with "LOT #:" prefix) and add to manual list
-          navigator.clipboard.writeText(displayText).catch(()=>{ /* ignore errors */ });
+          navigator.clipboard.writeText(displayText).catch(()=>{});
           span.style.background = "#1E90FF";
           addToManualList(newLot);
           startTimer();
@@ -350,7 +337,6 @@
       startTimer();
     }
 
-    // --- Copy functions ---
     function copyAll(listId) {
       const items = Array.from(document.querySelectorAll(`#${listId} li`)).map(li => li.textContent);
       if (items.length === 0) {
@@ -383,10 +369,7 @@
         .catch(() => alert("Failed to copy."));
     }
 
-    // --- Date button helpers ---
-    function pad(num) {
-      return num.toString().padStart(2, '0');
-    }
+    function pad(num) { return num.toString().padStart(2, '0'); }
 
     function formatDateForLot(date) {
       const mm = pad(date.getMonth() + 1);
@@ -399,11 +382,12 @@
       return date.toLocaleDateString(undefined, { weekday: 'short' });
     }
 
+    // Updated: show today + next 9 days
     function createDateButtons() {
       const container = document.getElementById('dateButtonsContainer');
       container.innerHTML = '<strong>Select Date:</strong><br>';
       const today = new Date();
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 10; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() + i);
         const formattedDate = formatDateForLot(date);
@@ -418,7 +402,6 @@
       }
     }
 
-    // --- Background images ---
     const bgImages = {
       1: 'https://i.redd.it/afmu6uyoukif1.jpeg',
       2: 'https://i.redd.it/6lvfziya2nff1.jpeg',
@@ -430,7 +413,6 @@
       document.body.style.backgroundImage = `url('${url}')`;
     }
 
-    // --- Init ---
     createDateButtons();
     changeBG(1);
     updateCounts();
